@@ -1,0 +1,869 @@
+{
+  "info": {
+    "_postman_id": "555b20e2-a694-4f10-949f-0d79a748a1bb",
+    "name": "QA_Testing_Assignment",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "46917986",
+    "_collection_link": "https://go.postman.co/collection/46917986-555b20e2-a694-4f10-949f-0d79a748a1bb?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Happy path",
+      "item": [
+        {
+          "name": "Text Response",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//checking the status code\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "// Test 2: Response time is acceptable\r",
+                  "pm.test(\"Response time is under 10 seconds\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);\r",
+                  "});\r",
+                  "//Test 3: Response has candidates array\r",
+                  "pm.test(\"Response has candidates array\", function () {\r",
+                  "    const json = pm.response.json();\r",
+                  "    pm.expect(json).to.have.property(\"candidates\");\r",
+                  "    pm.expect(json.candidates).to.be.an(\"array\");\r",
+                  "    pm.expect(json.candidates.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "// Test 4: Response contains actual text content\r",
+                  "pm.test(\"Response contains text content\", function () {\r",
+                  "    const json = pm.response.json();\r",
+                  "    const text = json.candidates[0].content.parts[0].text;\r",
+                  "    pm.expect(text).to.be.a(\"string\");\r",
+                  "    pm.expect(text.length).to.be.above(50);\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"contents\": [\n      {\n        \"parts\": [\n          {\n            \"text\": \"How many types of diabetes are there\"\n          }\n        ]\n      }\n    ]\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Available Models",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// status code is 200\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "// Test 2: valid model name is present\r",
+                  "pm.test(\"Valid model name is present\", function () {\r",
+                  "    const json=pm.response.json();\r",
+                  "    json.models.forEach(function(model){\r",
+                  "        pm.expect(model).to.have.property(\"name\");\r",
+                  "    });\r",
+                  "});\r",
+                  "// Test 3: Response time is les than 1s\r",
+                  "pm.test(\"Response time is less than 1 seconds\", function () {\r",
+                  "   pm.expect(pm.response.responseTime).to.be.below(1000)\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/models/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Validation Errors",
+      "item": [
+        {
+          "name": "Empty parts array",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test1 : Response is not 200\r",
+                  "pm.test(\"Status code is not 200\", function () {\r",
+                  "    pm.response.to.not.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "//Test2 : Response returns a 4xx error\r",
+                  "pm.test(\"Response returns a 4xx error\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.within(400, 499);\r",
+                  "});\r",
+                  "\r",
+                  "//Test3 : Response body contains an error property\r",
+                  "pm.test(\"Response body contains an error property\", function () {\r",
+                  "    const body=pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\":[\r\n        {\r\n        \"parts\":[\r\n            \r\n        ]\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Empty text",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test1 : Response is not 200\r",
+                  "pm.test(\"Status code is not 200\", function () {\r",
+                  "    pm.response.to.not.have.status(200);\r",
+                  "});\r",
+                  "//Test2 : Response returns a 4xx error\r",
+                  "pm.test(\"Response returns a 4xx error\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.within(400, 499);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid model name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test 1 the model name is rejected\r",
+                  "pm.test(\"Model name is rejected\", function () {\r",
+                  "    pm.response.to.not.have.status(200);\r",
+                  "});\r",
+                  "//Test2 : Response returns a 4xx error\r",
+                  "pm.test(\"Response returns a 4xx error\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.within(400, 499);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"how many days in a month\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/gemini-invalid-model:generateContent/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "gemini-invalid-model:generateContent",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error States",
+      "item": [
+        {
+          "name": "Missing API key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test1 missing api key in header\r",
+                  "pm.test(\"Missing API Key in Header\", function () {\r",
+                  "    pm.response.to.not.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "//Test2 returns 403 error for missing api key\r",
+                  "pm.test(\"403 Forbidden Error for Missing API Key\", function () {\r",
+                  "    pm.response.to.have.status(403);\r",
+                  "});\r",
+                  "\r",
+                  "//Test 3 valid error is present\r",
+                  "pm.test(\"Error message is present\", function () {\r",
+                  "    const body=pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"how to measure heartbeat\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid API key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test1 Invalid API key in header\r",
+                  "pm.test(\"Invalid API Key in Header\", function () {\r",
+                  "    pm.response.to.not.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "//Test2 returns 403 error for missing api key\r",
+                  "pm.test(\"400 Bad Request for Invalid API Key\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"how to measure heartbeat\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key=INVALID_13",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "INVALID_13"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Malformed JSON body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test 1:  Malformed JSON is rejected\r",
+                  "pm.test(\"Malformed JSON is rejected\", function () {\r",
+                  "    pm.response.to.not.have.status(200);\r",
+                  "});\r",
+                  "pm.test(\"Returns a valid 400 error\", function() {\r",
+                  "    pm.expect(pm.response.code).to.be.within(400,499);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    wrong json \r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "AI output quality",
+      "item": [
+        {
+          "name": "Response Not Empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test 1: Response is a sucess\r",
+                  "pm.test(\"Response is a sucess\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "//Test 2: Response has an appropriate length\r",
+                  "pm.test(\"Response is over 150 characters\", function(){\r",
+                  "    const text= pm.response.json();\r",
+                  "    const resp=text.candidates[0].content.parts[0].text;\r",
+                  "    pm.expect(resp.length).to.be.above(150);\r",
+                  "});\r",
+                  "\r",
+                  "//Test 3: Response was ened naturally\r",
+                  "pm.test(\"Response was ended naturally\", function(){\r",
+                  "    const text= pm.response.json();\r",
+                  "    const reason= text.candidates[0].finishReason;\r",
+                  "    pm.expect(reason).to.equal(\"STOP\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"How to reduce hairfall\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Response Safety Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test 1: Response is a sucess\r",
+                  "pm.test(\"Response is a sucess\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "//Test 2 Response did not triggered safety\r",
+                  "pm.test(\"Response did not triggered safety\", function () {\r",
+                  "    const text= pm.response.json();\r",
+                  "    const reason= text.candidates[0].finishReason;\r",
+                  "    pm.expect(reason).to.not.equal(\"SAFETY\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"How to reduce hairfall\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Response Relevance Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test 1: Response is a sucess\r",
+                  "pm.test(\"Response is a sucess\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "//Test 2: Response is relevant to the prompt\r",
+                  "pm.test(\"Response is relevant to the prompt\", function () {\r",
+                  "    const resp=pm.response.json();\r",
+                  "    const text=resp.candidates[0].content.parts[0].text.toLowerCase();\r",
+                  "    const relvancy=text.includes(\"hairfall\")|| text.includes(\"nutrition\")|| text.includes(\"stress\");\r",
+                  "});\r",
+                  "\r",
+                  "//Test 3: response is of a valid length\r",
+                  "pm.test(\"Response length is within expected range\", function () {\r",
+                  "    const resp=pm.response.json();\r",
+                  "    const text=resp.candidates[0].content.parts[0].text.toLowerCase();\r",
+                  "    pm.expect(text.length).to.be.at.least(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"How to reduce hairfall\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Idempotency",
+      "item": [
+        {
+          "name": "Count Tokens-first run",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//Test 1 : status code is 200\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "//Test 2:saving token count for comparison\r",
+                  "pm.test(\"Save token count for idempotency comparison\", function () {\r",
+                  "    const json = pm.response.json();\r",
+                  "\r",
+                  "    const totalTokens=json.usageMetadata.totalTokenCount\r",
+                  "    pm.environment.set(\"savedTokenCount\", totalTokens);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"How to reduce hairfall\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Count Tokens-second run",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "//test 1 checking status code is 200\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "//Test 2 comparing token count with first run\r",
+                  "pm.test(\"Repeated token count request returns same result\", function () {\r",
+                  "    const json = pm.response.json();\r",
+                  "    const savedTokenCount = Number(pm.environment.get(\"savedTokenCount\"));\r",
+                  "\r",
+                  "    pm.expect(json.totalTokens).to.eql(savedTokenCount);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-goog-api-key",
+                "value": "AIzaSyBkaAKbcSnduvwqhWWP5ojpmU62WdcaK-8",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"contents\": [\r\n      {\r\n        \"parts\": [\r\n          {\r\n            \"text\": \"How to reduce hairfall\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }"
+            },
+            "url": {
+              "raw": "{{base_url}}/models/{{model}}/?key={{api_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "models",
+                "{{model}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
